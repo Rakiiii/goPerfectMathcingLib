@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"time"
 
 	graphlib "github.com/Rakiiii/goGraph"
 	gopair "github.com/Rakiiii/goPair"
@@ -18,16 +19,28 @@ func frinksPerfectMathcingAlgth(graph graphlib.IGraph) ([]gopair.IntPair, error)
 	return perfectMatching, nil
 }
 
-func IsPerfectMatchingExist(graph graphlib.IGraph) bool {
-	matrix := constractRandomMatrix(graph)
-	return isPerfectMatchingExist(matrix)
+type RandomMatcher struct {
+	rnd *rand.Rand
 }
 
-func isPerfectMatchingExist(matrix *gonum.Dense) bool {
+func NewRandomMatcher() *RandomMatcher {
+	return &RandomMatcher{rnd: rand.New(rand.NewSource(time.Now().UnixNano()))}
+}
+
+func (c *RandomMatcher) GetPerfectMatching(graph graphlib.IGraph) ([]gopair.IntPair, error) {
+	return c.GetPerfectMatchingByRandomAlgorithm(graph)
+}
+
+func (c *RandomMatcher) IsPerfectMatchingExist(graph graphlib.IGraph) bool {
+	matrix := c.constractRandomMatrix(graph)
+	return c.isPerfectMatchingExist(matrix)
+}
+
+func (c *RandomMatcher) isPerfectMatchingExist(matrix *gonum.Dense) bool {
 	return gonum.Det(matrix) != 0.0
 }
 
-func GetPerfectMatchingByRandomAlgorithm(graph graphlib.IGraph) ([]gopair.IntPair, error) {
+func (c *RandomMatcher) GetPerfectMatchingByRandomAlgorithm(graph graphlib.IGraph) ([]gopair.IntPair, error) {
 	n := graph.AmountOfVertex()
 	if n%2 != 0 {
 		return nil, NoPerfectMatching
@@ -35,36 +48,36 @@ func GetPerfectMatchingByRandomAlgorithm(graph graphlib.IGraph) ([]gopair.IntPai
 	perfectMatching := make([]gopair.IntPair, n/2)
 
 	Binversed := gonum.NewDense(n, n, make([]float64, n*n))
-	B := constractRandomMatrix(graph)
-	if !isPerfectMatchingExist(B) {
+	B := c.constractRandomMatrix(graph)
+	if !c.isPerfectMatchingExist(B) {
 		return nil, NoPerfectMatching
 	}
 
 	Binversed.Inverse(B)
 	for k := 0; k < n/2; k++ {
-		i, j := getFirstNonZeroElemntPosition(Binversed)
+		i, j := c.getFirstNonZeroElemntPosition(Binversed)
 		perfectMatching[k] = gopair.IntPair{First: i + k*2, Second: j + k*2}
 		if Binversed.RawMatrix().Rows > 2 {
-			Binversed = getSubMatrix(i, j, Binversed)
+			Binversed = c.getSubMatrix(i, j, Binversed)
 		}
 	}
 
 	return perfectMatching, nil
 }
 
-func constractRandomMatrix(graph graphlib.IGraph) *gonum.Dense {
+func (c *RandomMatcher) constractRandomMatrix(graph graphlib.IGraph) *gonum.Dense {
 	vertexAmount := graph.AmountOfVertex()
 	rawMatrix := make([]float64, vertexAmount*vertexAmount)
 	for i := 0; i < vertexAmount; i++ {
 		edges := graph.GetEdges(i)
 		for _, e := range edges {
-			rawMatrix[i*vertexAmount+e] = float64(rand.Int())
+			rawMatrix[i*vertexAmount+e] = float64(c.rnd.Int())
 		}
 	}
 	return gonum.NewDense(vertexAmount, vertexAmount, rawMatrix)
 }
 
-func getSubMatrix(x, y int, oldMat *gonum.Dense) *gonum.Dense {
+func (c *RandomMatcher) getSubMatrix(x, y int, oldMat *gonum.Dense) *gonum.Dense {
 	newMatrixSize := oldMat.RawMatrix().Rows - 2
 	newRawMatrix := make([]float64, newMatrixSize*newMatrixSize)
 	position := 0
@@ -79,7 +92,7 @@ func getSubMatrix(x, y int, oldMat *gonum.Dense) *gonum.Dense {
 	return gonum.NewDense(newMatrixSize, newMatrixSize, newRawMatrix)
 }
 
-func getFirstNonZeroElemntPosition(mat *gonum.Dense) (int, int) {
+func (c *RandomMatcher) getFirstNonZeroElemntPosition(mat *gonum.Dense) (int, int) {
 	for i := 0; i < mat.RawMatrix().Rows; i++ {
 		for j := 0; j < mat.RawMatrix().Cols; j++ {
 			if mat.At(i, j) != 0 && i != j {
@@ -90,7 +103,7 @@ func getFirstNonZeroElemntPosition(mat *gonum.Dense) (int, int) {
 	return -1, -1
 }
 
-func prtintMatrix(matrix *gonum.Dense) {
+func printMatrix(matrix *gonum.Dense) {
 	for i := 0; i < matrix.RawMatrix().Rows; i++ {
 		for j := 0; j < matrix.RawMatrix().Cols; j++ {
 			fmt.Print(matrix.At(i, j), " ")
