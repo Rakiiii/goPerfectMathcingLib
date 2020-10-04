@@ -45,7 +45,7 @@ func (c *RandomMatcher) GetPerfectMatchingByRandomAlgorithm(graph graphlib.IGrap
 	if n%2 != 0 {
 		return nil, NoPerfectMatching
 	}
-	perfectMatching := make([]gopair.IntPair, n/2)
+	perfectMatching := make([]gopair.IntPair, 0)
 
 	Binversed := gonum.NewDense(n, n, make([]float64, n*n))
 	B := c.constractRandomMatrix(graph)
@@ -54,9 +54,17 @@ func (c *RandomMatcher) GetPerfectMatchingByRandomAlgorithm(graph graphlib.IGrap
 	}
 
 	Binversed.Inverse(B)
+	var matrix matrixOfCorrectnes
+	matrix.init(n)
+
 	for k := 0; k < n/2; k++ {
+		//printMatrix(Binversed)
+		//matrix.print()
 		i, j := c.getFirstNonZeroElemntPosition(Binversed)
-		perfectMatching[k] = gopair.IntPair{First: i + k*2, Second: j + k*2}
+		x := matrix.getOriginalNumber(i, j)
+		//fmt.Println("(", i, ":", j, ") original position", "(", x.First, ":", x.Second, ") ")
+		perfectMatching = append(perfectMatching, x)
+		matrix.updateMatrixOfCorrectnes(x.First, x.Second)
 		if Binversed.RawMatrix().Rows > 2 {
 			Binversed = c.getSubMatrix(i, j, Binversed)
 		}
@@ -65,13 +73,71 @@ func (c *RandomMatcher) GetPerfectMatchingByRandomAlgorithm(graph graphlib.IGrap
 	return perfectMatching, nil
 }
 
+type matrixOfCorrectnes struct {
+	matrix [][]gopair.IntPair
+}
+
+func (m *matrixOfCorrectnes) init(n int) {
+	matrix := make([][]gopair.IntPair, n)
+	for i := 0; i < n; i++ {
+		matrix[i] = make([]gopair.IntPair, n)
+		for j := 0; j < n; j++ {
+			matrix[i][j] = gopair.IntPair{First: i, Second: j}
+		}
+	}
+	m.matrix = matrix
+}
+
+func (m *matrixOfCorrectnes) updateMatrixOfCorrectnes(i int, j int) {
+	for x := 0; x < len(m.matrix); x++ {
+		for y := 0; y < len(m.matrix[x]); y++ {
+			if x > i {
+				m.matrix[x][y].First--
+			}
+			if x > j {
+				m.matrix[x][y].First--
+			}
+			if y > i {
+				m.matrix[x][y].Second--
+			}
+			if y > j {
+				m.matrix[x][y].Second--
+			}
+			if x == i || y == j || y == i || x == j {
+				m.matrix[x][y] = gopair.IntPair{First: -1, Second: -1}
+			}
+		}
+	}
+}
+
+func (m *matrixOfCorrectnes) getOriginalNumber(i int, j int) gopair.IntPair {
+	for posVer, x := range m.matrix {
+		for posHor, y := range x {
+			if y.First == i && y.Second == j {
+				return gopair.IntPair{First: posVer, Second: posHor}
+			}
+		}
+
+	}
+	return gopair.IntPair{First: -1, Second: -1}
+}
+
+func (m *matrixOfCorrectnes) print() {
+	for _, elem := range m.matrix {
+		for _, x := range elem {
+			fmt.Print("(", x.First, ":", x.Second, ") ")
+		}
+		fmt.Println()
+	}
+}
+
 func (c *RandomMatcher) constractRandomMatrix(graph graphlib.IGraph) *gonum.Dense {
 	vertexAmount := graph.AmountOfVertex()
 	rawMatrix := make([]float64, vertexAmount*vertexAmount)
 	for i := 0; i < vertexAmount; i++ {
 		edges := graph.GetEdges(i)
 		for _, e := range edges {
-			rawMatrix[i*vertexAmount+e] = float64(c.rnd.Int())
+			rawMatrix[i*vertexAmount+e] = float64(c.rnd.Int31n(1000))
 		}
 	}
 	return gonum.NewDense(vertexAmount, vertexAmount, rawMatrix)
@@ -110,4 +176,5 @@ func printMatrix(matrix *gonum.Dense) {
 		}
 		fmt.Println()
 	}
+	fmt.Println()
 }

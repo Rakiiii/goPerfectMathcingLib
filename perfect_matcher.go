@@ -8,3 +8,7 @@ import (
 type IPerfectMatcher interface {
 	GetPerfectMatching(graphlib.IGraph) ([]gopair.IntPair, error)
 }
+
+type IPerfectMatcherChecker interface {
+	IsPerfectMatchingExist(graph graphlib.IGraph) bool
+}

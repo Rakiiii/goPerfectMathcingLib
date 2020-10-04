@@ -8,7 +8,10 @@ import (
 	graphlib "github.com/Rakiiii/goGraph"
 )
 
-var testGraphPerfectMatching string = "Testing/GetPerfectMatchingGraph"
+var Dir string = "Testing/"
+
+var testGraphPerfectMatching string = Dir + "GetPerfectMatchingGraph"
+var testGraphGetHungryContractedGraphNI = Dir + "GetHungryContractedGraphNI"
 var testSeed int64 = 1238678900867786087
 
 func TestGetPerfectMatchingByRandomAlgorithm(t *testing.T) {
@@ -19,6 +22,10 @@ func TestGetPerfectMatchingByRandomAlgorithm(t *testing.T) {
 		return
 	}
 	matcher := RandomMatcher{rnd: rand.New(rand.NewSource(testSeed))}
+	if !matcher.IsPerfectMatchingExist(g) {
+		t.Error("Perfect matching does not exist")
+	}
+
 	matching, err := matcher.GetPerfectMatchingByRandomAlgorithm(g)
 	for i := 0; i < len(matching); i++ {
 		fmt.Println("(", matching[i].First, ":", matching[i].Second, ")")
