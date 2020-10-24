@@ -12,6 +12,7 @@ import (
 )
 
 var NoPerfectMatching error = errors.New("Perfect mathcing does not exist in graph")
+var FixedVertexesNotInited error = errors.New("Fixed vertexes at RandomMathcerWithFixedVertexes not initialized")
 
 func frinksPerfectMathcingAlgth(graph graphlib.IGraph) ([]gopair.IntPair, error) {
 	perfectMatching := make([]gopair.IntPair, 0)
@@ -23,16 +24,38 @@ type RandomMatcher struct {
 	rnd *rand.Rand
 }
 
+type RandomMathcerWithFixedVertexes struct {
+	RandomMatcher
+	fixedVertexes []gopair.IntPair
+}
+
+func NewRandomMathcerWithNilFixedVertexes() *RandomMathcerWithFixedVertexes {
+	return NewRandomMathcerWithFixedVertexes(nil)
+}
+
+func NewRandomMathcerWithFixedVertexes(fixedVertexes []gopair.IntPair) *RandomMathcerWithFixedVertexes {
+	return &RandomMathcerWithFixedVertexes{RandomMatcher: *NewRandomMatcher(), fixedVertexes: fixedVertexes}
+}
+
+func (c *RandomMathcerWithFixedVertexes) SetFixedVertexes(fixedVertexes []gopair.IntPair) {
+	c.fixedVertexes = fixedVertexes
+}
+
+func (c *RandomMathcerWithFixedVertexes) GetPerfectMatching(graph graphlib.IGraph) ([]gopair.IntPair, error) {
+	if c.fixedVertexes == nil {
+		return nil, FixedVertexesNotInited
+	} else {
+		return c.getPerfectMatchingByRandomAlgorithmWithFixedVertexes(graph, c.fixedVertexes)
+	}
+
+}
+
 func NewRandomMatcher() *RandomMatcher {
 	return &RandomMatcher{rnd: rand.New(rand.NewSource(time.Now().UnixNano()))}
 }
 
 func (c *RandomMatcher) GetPerfectMatching(graph graphlib.IGraph) ([]gopair.IntPair, error) {
-	return c.GetPerfectMatchingByRandomAlgorithm(graph)
-}
-
-func (c *RandomMatcher) GetPerfectMatchingWithFixedVertexes(graph graphlib.IGraph, fixedVertexes []gopair.IntPair) ([]gopair.IntPair, error) {
-	return c.GetPerfectMatchingByRandomAlgorithmWithFixedVertexes(graph, fixedVertexes)
+	return c.getPerfectMatchingByRandomAlgorithm(graph)
 }
 
 func (c *RandomMatcher) IsPerfectMatchingExist(graph graphlib.IGraph) bool {
@@ -44,7 +67,7 @@ func (c *RandomMatcher) isPerfectMatchingExist(matrix *gonum.Dense) bool {
 	return gonum.Det(matrix) != 0.0
 }
 
-func (c *RandomMatcher) GetPerfectMatchingByRandomAlgorithm(graph graphlib.IGraph) ([]gopair.IntPair, error) {
+func (c *RandomMatcher) getPerfectMatchingByRandomAlgorithm(graph graphlib.IGraph) ([]gopair.IntPair, error) {
 	n := graph.AmountOfVertex()
 	if n%2 != 0 {
 		return nil, NoPerfectMatching
@@ -80,7 +103,7 @@ func (c *RandomMatcher) GetPerfectMatchingByRandomAlgorithm(graph graphlib.IGrap
 	return perfectMatching, nil
 }
 
-func (c *RandomMatcher) GetPerfectMatchingByRandomAlgorithmWithFixedVertexes(graph graphlib.IGraph, fixedVertexes []gopair.IntPair) ([]gopair.IntPair, error) {
+func (c *RandomMatcher) getPerfectMatchingByRandomAlgorithmWithFixedVertexes(graph graphlib.IGraph, fixedVertexes []gopair.IntPair) ([]gopair.IntPair, error) {
 	n := graph.AmountOfVertex()
 	if n%2 != 0 {
 		return nil, NoPerfectMatching

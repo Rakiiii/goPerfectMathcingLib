@@ -7,7 +7,6 @@ import (
 
 type IPerfectMatcher interface {
 	GetPerfectMatching(graphlib.IGraph) ([]gopair.IntPair, error)
-	GetPerfectMatchingWithFixedVertexes(graphlib.IGraph, []gopair.IntPair) ([]gopair.IntPair, error)
 }
 
 type IPerfectMatcherChecker interface {

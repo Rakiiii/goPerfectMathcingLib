@@ -29,7 +29,7 @@ func TestGetPerfectMatchingByRandomAlgorithm(t *testing.T) {
 		t.Error("Perfect matching does not exist")
 	}
 
-	matching, err := matcher.GetPerfectMatchingByRandomAlgorithm(g)
+	matching, err := matcher.getPerfectMatchingByRandomAlgorithm(g)
 	for i := 0; i < len(matching); i++ {
 		fmt.Println("(", matching[i].First, ":", matching[i].Second, ")")
 	}
@@ -50,7 +50,7 @@ func TestGetPerfectMatchingByRandomAlgorithmWithFixedVertexes(t *testing.T) {
 
 	fixedVertexes := []gopair.IntPair{gopair.IntPair{First: 0, Second: 4}, gopair.IntPair{First: 1, Second: 2}}
 
-	matching, err := matcher.GetPerfectMatchingByRandomAlgorithmWithFixedVertexes(g, fixedVertexes)
+	matching, err := matcher.getPerfectMatchingByRandomAlgorithmWithFixedVertexes(g, fixedVertexes)
 	if err == NoPerfectMatching {
 		fmt.Println(err)
 	}
