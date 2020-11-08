@@ -21,12 +21,14 @@ func frinksPerfectMathcingAlgth(graph graphlib.IGraph) ([]gopair.IntPair, error)
 }
 
 type RandomMatcher struct {
-	rnd *rand.Rand
+	rnd     *rand.Rand
+	matcher IElementMatcher
 }
 
 type RandomMathcerWithFixedVertexes struct {
 	RandomMatcher
 	fixedVertexes []gopair.IntPair
+	matcher       IElementMatcher
 }
 
 func NewRandomMathcerWithNilFixedVertexes() *RandomMathcerWithFixedVertexes {
@@ -67,6 +69,42 @@ func (c *RandomMatcher) isPerfectMatchingExist(matrix *gonum.Dense) bool {
 	return gonum.Det(matrix) != 0.0
 }
 
+// func (c *RandomMatcher) getPerfectMatchingByRandomAlgorithm(graph graphlib.IGraph) ([]gopair.IntPair, error) {
+// 	n := graph.AmountOfVertex()
+// 	if n%2 != 0 {
+// 		return nil, NoPerfectMatching
+// 	}
+// 	perfectMatching := make([]gopair.IntPair, 0)
+
+// 	Binversed := gonum.NewDense(n, n, make([]float64, n*n))
+// 	B := c.constractRandomMatrix(graph)
+// 	if !c.isPerfectMatchingExist(B) {
+// 		return nil, NoPerfectMatching
+// 	}
+
+// 	Binversed.Inverse(B)
+// 	var matrix matrixOfCorrectnes
+// 	matrix.init(n)
+// 	//printMatrix(B)
+
+// 	for k := 0; k < n/2; k++ {
+// 		printMatrix(Binversed)
+// 		matrix.print()
+// 		i, j := c.getFirstNonZeroElemntPosition(Binversed, graph, &matrix)
+// 		x := matrix.getOriginalNumber(i, j)
+// 		//fmt.Println()
+// 		fmt.Println("(", i, ":", j, ") original position", "(", x.First, ":", x.Second, ") ")
+// 		fmt.Println()
+// 		perfectMatching = append(perfectMatching, x)
+// 		matrix.updateMatrixOfCorrectnes(x.First, x.Second)
+// 		if Binversed.RawMatrix().Rows > 2 {
+// 			Binversed = c.getSubMatrix(i, j, Binversed)
+// 		}
+// 	}
+
+// 	return perfectMatching, nil
+// }
+
 func (c *RandomMatcher) getPerfectMatchingByRandomAlgorithm(graph graphlib.IGraph) ([]gopair.IntPair, error) {
 	n := graph.AmountOfVertex()
 	if n%2 != 0 {
@@ -74,29 +112,27 @@ func (c *RandomMatcher) getPerfectMatchingByRandomAlgorithm(graph graphlib.IGrap
 	}
 	perfectMatching := make([]gopair.IntPair, 0)
 
-	Binversed := gonum.NewDense(n, n, make([]float64, n*n))
 	B := c.constractRandomMatrix(graph)
 	if !c.isPerfectMatchingExist(B) {
 		return nil, NoPerfectMatching
 	}
-
-	Binversed.Inverse(B)
+	Binversed := c.constructTatasMatrix(B, graph)
 	var matrix matrixOfCorrectnes
 	matrix.init(n)
-	//printMatrix(B)
-
-	for k := 0; k < n/2; k++ {
-		//printMatrix(Binversed)
-		//matrix.print()
+	for k := 1; k <= n/2; k++ {
+		// matrix.print()
+		// fmt.Println()
+		// printMatrix(Binversed)
+		// fmt.Println()
 		i, j := c.getFirstNonZeroElemntPosition(Binversed, graph, &matrix)
 		x := matrix.getOriginalNumber(i, j)
-		//fmt.Println()
-		//fmt.Println("(", i, ":", j, ") original position", "(", x.First, ":", x.Second, ") ")
-		//fmt.Println()
+		// fmt.Println("(i:", i, ";j:", j, ") x(", x.First, ":", x.Second, ")")
 		perfectMatching = append(perfectMatching, x)
 		matrix.updateMatrixOfCorrectnes(x.First, x.Second)
-		if Binversed.RawMatrix().Rows > 2 {
-			Binversed = c.getSubMatrix(i, j, Binversed)
+		if B.RawMatrix().Rows > 4 {
+			// fmt.Println("b size row:", B.RawMatrix().Rows, " cols:", B.RawMatrix().Cols)
+			B = c.getSubMatrix(i, j, B)
+			Binversed = c.constructTatasMatrix(B, graph)
 		}
 	}
 
@@ -109,100 +145,50 @@ func (c *RandomMatcher) getPerfectMatchingByRandomAlgorithmWithFixedVertexes(gra
 		return nil, NoPerfectMatching
 	}
 
-	Binversed := gonum.NewDense(n, n, make([]float64, n*n))
 	B := c.constractRandomMatrix(graph)
 	if !c.isPerfectMatchingExist(B) {
 		return nil, NoPerfectMatching
 	}
 
-	Binversed.Inverse(B)
+	Binversed := c.constructTatasMatrix(B, graph)
+	// printMatrix(Binversed)
 	var matrix matrixOfCorrectnes
 	matrix.init(n)
 	perfectMatching := make([]gopair.IntPair, 0)
 	for _, vertexPair := range fixedVertexes {
-		if Binversed.At(vertexPair.First, vertexPair.Second) == 0 || Binversed.At(vertexPair.First, vertexPair.Second) == -0 || Binversed.At(vertexPair.Second, vertexPair.First) == 0 || Binversed.At(vertexPair.Second, vertexPair.First) == -0 {
+		fixedPair := matrix.getFixedNumberFromPair(vertexPair)
+		if Binversed.At(fixedPair.First, fixedPair.Second) == 0 || Binversed.At(fixedPair.First, fixedPair.Second) == -0 || Binversed.At(fixedPair.Second, fixedPair.First) == 0 || Binversed.At(fixedPair.Second, fixedPair.First) == -0 {
 			return nil, NoPerfectMatching
 		} else {
 			perfectMatching = append(perfectMatching, vertexPair)
 			matrix.updateMatrixOfCorrectnes(vertexPair.First, vertexPair.Second)
+			if B.RawMatrix().Rows > 4 {
+				B = c.getSubMatrix(fixedPair.First, fixedPair.Second, B)
+				Binversed = c.constructTatasMatrix(B, graph)
+			}
 		}
 	}
 
-	Binversed = c.getSubMatrixFromSlice(fixedVertexes, Binversed)
 	for k := 0; k < (n/2)-len(fixedVertexes); k++ {
-		//printMatrix(Binversed)
-		//matrix.print()
+		if !c.isPerfectMatchingExist(B) {
+			return nil, NoPerfectMatching
+		}
+		// matrix.print()
+		// fmt.Println()
+		// printMatrix(Binversed)
+		// fmt.Println()
 		i, j := c.getFirstNonZeroElemntPosition(Binversed, graph, &matrix)
 		x := matrix.getOriginalNumber(i, j)
-		//fmt.Println()
-		//fmt.Println("(", i, ":", j, ") original position", "(", x.First, ":", x.Second, ") ")
-		//fmt.Println()
+		// fmt.Println("(i:", i, ";j:", j, ") x(", x.First, ":", x.Second, ")")
 		perfectMatching = append(perfectMatching, x)
 		matrix.updateMatrixOfCorrectnes(x.First, x.Second)
-		if Binversed.RawMatrix().Rows > 2 {
-			Binversed = c.getSubMatrix(i, j, Binversed)
+		if B.RawMatrix().Rows > 4 {
+			B = c.getSubMatrix(i, j, B)
+			Binversed = c.constructTatasMatrix(B, graph)
 		}
 	}
 
 	return perfectMatching, nil
-}
-
-type matrixOfCorrectnes struct {
-	matrix [][]gopair.IntPair
-}
-
-func (m *matrixOfCorrectnes) init(n int) {
-	matrix := make([][]gopair.IntPair, n)
-	for i := 0; i < n; i++ {
-		matrix[i] = make([]gopair.IntPair, n)
-		for j := 0; j < n; j++ {
-			matrix[i][j] = gopair.IntPair{First: i, Second: j}
-		}
-	}
-	m.matrix = matrix
-}
-
-func (m *matrixOfCorrectnes) updateMatrixOfCorrectnes(i int, j int) {
-	for x := 0; x < len(m.matrix); x++ {
-		for y := 0; y < len(m.matrix[x]); y++ {
-			if x > i {
-				m.matrix[x][y].First--
-			}
-			if x > j {
-				m.matrix[x][y].First--
-			}
-			if y > i {
-				m.matrix[x][y].Second--
-			}
-			if y > j {
-				m.matrix[x][y].Second--
-			}
-			if x == i || y == j || y == i || x == j {
-				m.matrix[x][y] = gopair.IntPair{First: -1, Second: -1}
-			}
-		}
-	}
-}
-
-func (m *matrixOfCorrectnes) getOriginalNumber(i int, j int) gopair.IntPair {
-	for posVer, x := range m.matrix {
-		for posHor, y := range x {
-			if y.First == i && y.Second == j {
-				return gopair.IntPair{First: posVer, Second: posHor}
-			}
-		}
-
-	}
-	return gopair.IntPair{First: -1, Second: -1}
-}
-
-func (m *matrixOfCorrectnes) print() {
-	for _, elem := range m.matrix {
-		for _, x := range elem {
-			fmt.Print("(", x.First, ":", x.Second, ") ")
-		}
-		fmt.Println()
-	}
 }
 
 func (c *RandomMatcher) constractRandomMatrix(graph graphlib.IGraph) *gonum.Dense {
@@ -257,10 +243,13 @@ func (c *RandomMatcher) getFirstNonZeroElemntPosition(mat *gonum.Dense, graph gr
 	for i := 0; i < mat.RawMatrix().Rows; i++ {
 		for j := 0; j < mat.RawMatrix().Cols; j++ {
 			originalPosition := matrixOfCorrectnes.getOriginalNumber(i, j)
-			if mat.At(i, j) != 0 && mat.At(i, j) != -0 && i != j && contains(graph.GetEdges(originalPosition.First), originalPosition.Second) {
-				if mat.At(j, i) != 0 && mat.At(j, i) != -0 && i != j {
-					//fmt.Println("value is ", mat.At(i, j))
-					return i, j
+			// fmt.Println("(i:", i, ";j:", j, ") origin (", originalPosition.First, ":", originalPosition.Second, ") mat:", mat.At(i, j), ";", mat.At(j, i), ")")
+			if originalPosition.First != -1 && originalPosition.Second != -2 {
+				// fmt.Println("contains:", contains(graph.GetEdges(originalPosition.First), originalPosition.Second))
+				if mat.At(i, j) != 0 && mat.At(i, j) != -0 && i != j && contains(graph.GetEdges(originalPosition.First), originalPosition.Second) {
+					if mat.At(j, i) != 0 && mat.At(j, i) != -0 && i != j {
+						return i, j
+					}
 				}
 			}
 		}
@@ -268,10 +257,58 @@ func (c *RandomMatcher) getFirstNonZeroElemntPosition(mat *gonum.Dense, graph gr
 	return -1, -1
 }
 
+func (c *RandomMatcher) constructTatasMatrix(d *gonum.Dense, graph graphlib.IGraph) *gonum.Dense {
+	resultMatrix := make([]float64, 0)
+	for i := 0; i < d.RawMatrix().Rows; i++ {
+		for j := 0; j < d.RawMatrix().Cols; j++ {
+			// && contains(graph.GetEdges(i), j)
+			if i != j {
+				resultMatrix = append(resultMatrix, c.constructSecondLevelDet(d, i, j))
+			} else {
+				resultMatrix = append(resultMatrix, 0)
+			}
+		}
+	}
+	return gonum.NewDense(d.RawMatrix().Rows, d.RawMatrix().Cols, resultMatrix)
+}
+
+func (c *RandomMatcher) constructSecondLevelDet(matrix *gonum.Dense, rowPos int, colPos int) float64 {
+	return gonum.Det(c.getSubMatrix(rowPos, colPos, matrix))
+}
+
+func (c *RandomMatcher) constructTatasMatrixElement(matrix *gonum.Dense, inversed *gonum.Dense, rowPos int, colPos int) float64 {
+	if inversed.At(rowPos, colPos) == 0 {
+		return 0
+	}
+	elem := c.constructSecondLevelElement(matrix, rowPos, colPos)
+	if elem == 0 {
+		return elem
+	} else {
+		return c.matcher.matchElements(inversed.At(rowPos, colPos), elem)
+	}
+}
+
+func (c *RandomMatcher) constructSecondLevelElement(matrix *gonum.Dense, rowPos int, colPos int) float64 {
+	return 0
+}
+
 func printMatrix(matrix *gonum.Dense) {
 	for i := 0; i < matrix.RawMatrix().Rows; i++ {
+		fmt.Print("New Line :")
 		for j := 0; j < matrix.RawMatrix().Cols; j++ {
 			fmt.Print(matrix.At(i, j), " ")
+		}
+		fmt.Println()
+	}
+	fmt.Println()
+}
+
+func printMatrixNonZero(matrix *gonum.Dense) {
+	for i := 0; i < matrix.RawMatrix().Rows; i++ {
+		for j := 0; j < matrix.RawMatrix().Cols; j++ {
+			if matrix.At(i, j) != 0 {
+				fmt.Print(matrix.At(i, j), " ")
+			}
 		}
 		fmt.Println()
 	}

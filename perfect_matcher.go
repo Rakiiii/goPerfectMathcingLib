@@ -12,3 +12,7 @@ type IPerfectMatcher interface {
 type IPerfectMatcherChecker interface {
 	IsPerfectMatchingExist(graph graphlib.IGraph) bool
 }
+
+type IElementMatcher interface {
+	matchElements(float64, float64) float64
+}
