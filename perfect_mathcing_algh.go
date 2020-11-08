@@ -85,6 +85,9 @@ func (c *RandomMathcerWithFixedVertexes) IsPerfectMatchingExist(graph graphlib.I
 			}
 		}
 	}
+	printMatrix(B)
+	printMatrix(Binversed)
+	fmt.Println("perfect matching:", perfectMatching)
 	return c.RandomMatcher.isPerfectMatchingExist(B)
 }
 
@@ -173,13 +176,13 @@ func (c *RandomMatcher) getPerfectMatchingByRandomAlgorithmWithFixedVertexes(gra
 		if !c.isPerfectMatchingExist(B) {
 			return nil, NoPerfectMatching
 		}
-		// matrix.print()
-		// fmt.Println()
-		// printMatrix(Binversed)
-		// fmt.Println()
+		matrix.print()
+		fmt.Println()
+		printMatrix(Binversed)
+		fmt.Println()
 		i, j := c.getFirstNonZeroElemntPosition(Binversed, graph, &matrix)
 		x := matrix.getOriginalNumber(i, j)
-		// fmt.Println("(i:", i, ";j:", j, ") x(", x.First, ":", x.Second, ")")
+		fmt.Println("(i:", i, ";j:", j, ") x(", x.First, ":", x.Second, ")")
 		perfectMatching = append(perfectMatching, x)
 		matrix.updateMatrixOfCorrectnes(x.First, x.Second)
 		if B.RawMatrix().Rows > 4 {
