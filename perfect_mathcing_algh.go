@@ -67,7 +67,11 @@ func (c *RandomMathcerWithFixedVertexes) IsPerfectMatchingExist(graph graphlib.I
 	var matrix matrixOfCorrectnes
 	matrix.init(n)
 	perfectMatching := make([]gopair.IntPair, 0)
+	fmt.Println("fixed vertexes:", c.fixedVertexes)
 	for _, vertexPair := range c.fixedVertexes {
+		printMatrix(B)
+		printMatrix(Binversed)
+		fmt.Println("perfect matching:", perfectMatching)
 		fixedPair := matrix.getFixedNumberFromPair(vertexPair)
 		if Binversed.At(fixedPair.First, fixedPair.Second) == 0 || Binversed.At(fixedPair.First, fixedPair.Second) == -0 || Binversed.At(fixedPair.Second, fixedPair.First) == 0 || Binversed.At(fixedPair.Second, fixedPair.First) == -0 {
 			return false

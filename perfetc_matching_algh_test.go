@@ -56,7 +56,7 @@ func TestGetPerfectMatchingByRandomAlgorithmWithFixedVertexes(t *testing.T) {
 	//fixedVertexes := []gopair.IntPair{gopair.IntPair{First: 2, Second: 13}, gopair.IntPair{First: 11, Second: 24}}
 
 	//  fixedVertexes := []gopair.IntPair{gopair.IntPair{First: 2, Second: 13}, gopair.IntPair{First: 6, Second: 29}}
-	fixedVertexes := []gopair.IntPair{{First: 1, Second: 7}, {First: 3, Second: 5}}
+	fixedVertexes := []gopair.IntPair{{First: 1, Second: 7}, {First: 2, Second: 5}}
 	matcher := NewRandomMathcerWithFixedVertexes(fixedVertexes)
 	// if !matcher.IsPerfectMatchingExist(g) {
 	// 	t.Error("Perfect matching does not exist")
