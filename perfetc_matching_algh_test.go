@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"testing"
 
+	lslib "github.com/Rakiiii/goBipartitonLocalSearch"
 	graphlib "github.com/Rakiiii/goGraph"
 	gopair "github.com/Rakiiii/goPair"
 )
@@ -45,22 +46,26 @@ func TestGetPerfectMatchingByRandomAlgorithm(t *testing.T) {
 func TestGetPerfectMatchingByRandomAlgorithmWithFixedVertexes(t *testing.T) {
 	//t.Skip()
 	fmt.Println("Start TestGetPerfectMatchingByRandomAlgorithmWithFixedVertexes...")
-	var parser = new(graphlib.Parser)
-	var g, err = parser.ParseUnweightedUndirectedGraphFromFile(testGraphGetHungryContractedGraphNI)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	// var parser = new(graphlib.Parser)
+	// var g, err = parser.ParseUnweightedUndirectedGraphFromFile(testGraphGetHungryContractedGraphNI)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	g := lslib.NewGraph()
+	g.ParseGraph(testGraphGetHungryContractedGraphNI)
+	g.HungryNumIndependent()
 	g.Print()
+
 	//matcher := RandomMatcher{rnd: rand.New(rand.NewSource(testSeed))}
 	//fixedVertexes := []gopair.IntPair{gopair.IntPair{First: 2, Second: 13}, gopair.IntPair{First: 11, Second: 24}}
 
 	//  fixedVertexes := []gopair.IntPair{gopair.IntPair{First: 2, Second: 13}, gopair.IntPair{First: 6, Second: 29}}
-	fixedVertexes := []gopair.IntPair{{First: 1, Second: 7}, {First: 2, Second: 5}}
+	fixedVertexes := []gopair.IntPair{{First: 1, Second: 7}, {First: 3, Second: 4}}
 	matcher := NewRandomMathcerWithFixedVertexes(fixedVertexes)
-	// if !matcher.IsPerfectMatchingExist(g) {
-	// 	t.Error("Perfect matching does not exist")
-	// }
+	if !matcher.IsPerfectMatchingExist(g) {
+		t.Error("Perfect matching does not exist")
+	}
 
 	matcher.SetFixedVertexes([]gopair.IntPair{{First: 0, Second: 6}, {First: 3, Second: 4}})
 	matching, err := matcher.GetPerfectMatching(g) //matcher.getPerfectMatchingByRandomAlgorithmWithFixedVertexes(g, fixedVertexes)

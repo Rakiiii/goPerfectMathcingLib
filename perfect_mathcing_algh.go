@@ -67,14 +67,14 @@ func (c *RandomMathcerWithFixedVertexes) IsPerfectMatchingExist(graph graphlib.I
 	var matrix matrixOfCorrectnes
 	matrix.init(n)
 	perfectMatching := make([]gopair.IntPair, 0)
-	fmt.Println("fixed vertexes:", c.fixedVertexes)
+	// fmt.Println("fixed vertexes:", c.fixedVertexes)
 	for _, vertexPair := range c.fixedVertexes {
-		printMatrix(B)
-		printMatrix(Binversed)
-		fmt.Println("perfect matching:", perfectMatching)
+		// printMatrix(B)
+		// printMatrix(Binversed)
+		// fmt.Println("perfect matching:", perfectMatching)
 		fixedPair := matrix.getFixedNumberFromPair(vertexPair)
 		if Binversed.At(fixedPair.First, fixedPair.Second) == 0 || Binversed.At(fixedPair.First, fixedPair.Second) == -0 || Binversed.At(fixedPair.Second, fixedPair.First) == 0 || Binversed.At(fixedPair.Second, fixedPair.First) == -0 {
-			fmt.Println("retrun false:", NoPerfectMatching)
+			// fmt.Println("retrun false:", NoPerfectMatching)
 			return false
 		} else {
 			perfectMatching = append(perfectMatching, vertexPair)
@@ -85,9 +85,9 @@ func (c *RandomMathcerWithFixedVertexes) IsPerfectMatchingExist(graph graphlib.I
 			}
 		}
 	}
-	printMatrix(B)
-	printMatrix(Binversed)
-	fmt.Println("perfect matching:", perfectMatching)
+	// printMatrix(B)
+	// printMatrix(Binversed)
+	// fmt.Println("perfect matching:", perfectMatching)
 	return c.RandomMatcher.isPerfectMatchingExist(B)
 }
 
@@ -136,6 +136,10 @@ func (c *RandomMatcher) getPerfectMatchingByRandomAlgorithm(graph graphlib.IGrap
 			// fmt.Println("b size row:", B.RawMatrix().Rows, " cols:", B.RawMatrix().Cols)
 			B = c.getSubMatrix(i, j, B)
 			Binversed = c.constructTatasMatrix(B, graph)
+		} else {
+			if Binversed.RawMatrix().Rows > 2 {
+				Binversed = c.getSubMatrix(i, j, Binversed)
+			}
 		}
 	}
 
@@ -173,21 +177,26 @@ func (c *RandomMatcher) getPerfectMatchingByRandomAlgorithmWithFixedVertexes(gra
 	}
 
 	for k := 0; k < (n/2)-len(fixedVertexes); k++ {
+		// fmt.Println("k:", k, " max k:", (n/2)-len(fixedVertexes))
 		if !c.isPerfectMatchingExist(B) {
 			return nil, NoPerfectMatching
 		}
-		matrix.print()
-		fmt.Println()
-		printMatrix(Binversed)
-		fmt.Println()
+		// matrix.print()
+		// fmt.Println()
+		// printMatrix(Binversed)
+		// fmt.Println()
 		i, j := c.getFirstNonZeroElemntPosition(Binversed, graph, &matrix)
 		x := matrix.getOriginalNumber(i, j)
-		fmt.Println("(i:", i, ";j:", j, ") x(", x.First, ":", x.Second, ")")
+		// fmt.Println("(i:", i, ";j:", j, ") x(", x.First, ":", x.Second, ")")
 		perfectMatching = append(perfectMatching, x)
 		matrix.updateMatrixOfCorrectnes(x.First, x.Second)
 		if B.RawMatrix().Rows > 4 {
 			B = c.getSubMatrix(i, j, B)
 			Binversed = c.constructTatasMatrix(B, graph)
+		} else {
+			if Binversed.RawMatrix().Rows > 2 {
+				Binversed = c.getSubMatrix(i, j, Binversed)
+			}
 		}
 	}
 

@@ -3,6 +3,7 @@ module github.com/Rakiiii/goPerfectMathcingLib
 go 1.13
 
 require (
+	github.com/Rakiiii/goBipartitonLocalSearch v0.9.2
 	github.com/Rakiiii/goBoolMatrix v0.4.1 // indirect
 	github.com/Rakiiii/goGraph v0.3.2
 	github.com/Rakiiii/goPair v0.0.3
