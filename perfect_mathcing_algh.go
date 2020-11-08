@@ -74,6 +74,7 @@ func (c *RandomMathcerWithFixedVertexes) IsPerfectMatchingExist(graph graphlib.I
 		fmt.Println("perfect matching:", perfectMatching)
 		fixedPair := matrix.getFixedNumberFromPair(vertexPair)
 		if Binversed.At(fixedPair.First, fixedPair.Second) == 0 || Binversed.At(fixedPair.First, fixedPair.Second) == -0 || Binversed.At(fixedPair.Second, fixedPair.First) == 0 || Binversed.At(fixedPair.Second, fixedPair.First) == -0 {
+			fmt.Println("retrun false:", NoPerfectMatching)
 			return false
 		} else {
 			perfectMatching = append(perfectMatching, vertexPair)
