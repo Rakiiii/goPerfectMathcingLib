@@ -52,6 +52,37 @@ func (c *RandomMathcerWithFixedVertexes) GetPerfectMatching(graph graphlib.IGrap
 
 }
 
+func (c *RandomMathcerWithFixedVertexes) IsPerfectMatchingExist(graph graphlib.IGraph) bool {
+	n := graph.AmountOfVertex()
+	if n%2 != 0 {
+		return false
+	}
+
+	B := c.constractRandomMatrix(graph)
+	if !c.isPerfectMatchingExist(B) {
+		return false
+	}
+	Binversed := c.constructTatasMatrix(B, graph)
+	// printMatrix(Binversed)
+	var matrix matrixOfCorrectnes
+	matrix.init(n)
+	perfectMatching := make([]gopair.IntPair, 0)
+	for _, vertexPair := range c.fixedVertexes {
+		fixedPair := matrix.getFixedNumberFromPair(vertexPair)
+		if Binversed.At(fixedPair.First, fixedPair.Second) == 0 || Binversed.At(fixedPair.First, fixedPair.Second) == -0 || Binversed.At(fixedPair.Second, fixedPair.First) == 0 || Binversed.At(fixedPair.Second, fixedPair.First) == -0 {
+			return false
+		} else {
+			perfectMatching = append(perfectMatching, vertexPair)
+			matrix.updateMatrixOfCorrectnes(vertexPair.First, vertexPair.Second)
+			if B.RawMatrix().Rows > 4 {
+				B = c.getSubMatrix(fixedPair.First, fixedPair.Second, B)
+				Binversed = c.constructTatasMatrix(B, graph)
+			}
+		}
+	}
+	return c.RandomMatcher.isPerfectMatchingExist(B)
+}
+
 func NewRandomMatcher() *RandomMatcher {
 	return &RandomMatcher{rnd: rand.New(rand.NewSource(time.Now().UnixNano()))}
 }
