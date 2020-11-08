@@ -69,42 +69,6 @@ func (c *RandomMatcher) isPerfectMatchingExist(matrix *gonum.Dense) bool {
 	return gonum.Det(matrix) != 0.0
 }
 
-// func (c *RandomMatcher) getPerfectMatchingByRandomAlgorithm(graph graphlib.IGraph) ([]gopair.IntPair, error) {
-// 	n := graph.AmountOfVertex()
-// 	if n%2 != 0 {
-// 		return nil, NoPerfectMatching
-// 	}
-// 	perfectMatching := make([]gopair.IntPair, 0)
-
-// 	Binversed := gonum.NewDense(n, n, make([]float64, n*n))
-// 	B := c.constractRandomMatrix(graph)
-// 	if !c.isPerfectMatchingExist(B) {
-// 		return nil, NoPerfectMatching
-// 	}
-
-// 	Binversed.Inverse(B)
-// 	var matrix matrixOfCorrectnes
-// 	matrix.init(n)
-// 	//printMatrix(B)
-
-// 	for k := 0; k < n/2; k++ {
-// 		printMatrix(Binversed)
-// 		matrix.print()
-// 		i, j := c.getFirstNonZeroElemntPosition(Binversed, graph, &matrix)
-// 		x := matrix.getOriginalNumber(i, j)
-// 		//fmt.Println()
-// 		fmt.Println("(", i, ":", j, ") original position", "(", x.First, ":", x.Second, ") ")
-// 		fmt.Println()
-// 		perfectMatching = append(perfectMatching, x)
-// 		matrix.updateMatrixOfCorrectnes(x.First, x.Second)
-// 		if Binversed.RawMatrix().Rows > 2 {
-// 			Binversed = c.getSubMatrix(i, j, Binversed)
-// 		}
-// 	}
-
-// 	return perfectMatching, nil
-// }
-
 func (c *RandomMatcher) getPerfectMatchingByRandomAlgorithm(graph graphlib.IGraph) ([]gopair.IntPair, error) {
 	n := graph.AmountOfVertex()
 	if n%2 != 0 {
