@@ -133,7 +133,6 @@ func (c *RandomMatcher) getPerfectMatchingByRandomAlgorithm(graph graphlib.IGrap
 		perfectMatching = append(perfectMatching, x)
 		matrix.updateMatrixOfCorrectnes(x.First, x.Second)
 		if B.RawMatrix().Rows > 4 {
-			// fmt.Println("b size row:", B.RawMatrix().Rows, " cols:", B.RawMatrix().Cols)
 			B = c.getSubMatrix(i, j, B)
 			Binversed = c.constructTatasMatrix(B, graph)
 		} else {
