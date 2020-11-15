@@ -53,7 +53,7 @@ func TestGetPerfectMatchingByRandomAlgorithmWithFixedVertexes(t *testing.T) {
 	// 	return
 	// }
 	g := lslib.NewGraph()
-	g.ParseGraph(testGraphGetHungryContractedGraphNI)
+	g.ParseGraph(benchGraph)
 	g.HungryNumIndependent()
 	g.Print()
 
@@ -61,21 +61,25 @@ func TestGetPerfectMatchingByRandomAlgorithmWithFixedVertexes(t *testing.T) {
 	//fixedVertexes := []gopair.IntPair{gopair.IntPair{First: 2, Second: 13}, gopair.IntPair{First: 11, Second: 24}}
 
 	//  fixedVertexes := []gopair.IntPair{gopair.IntPair{First: 2, Second: 13}, gopair.IntPair{First: 6, Second: 29}}
-	fixedVertexes := []gopair.IntPair{{First: 1, Second: 7}, {First: 3, Second: 4}}
+	fixedVertexes := []gopair.IntPair{{First: 0, Second: 13}, {First: 4, Second: 28}, {First: 1, Second: 15}, {First: 2, Second: 25}, {First: 3, Second: 20}, {First: 5, Second: 16}, {First: 6, Second: 24}, {First: 7, Second: 23}, {First: 8, Second: 19}, {First: 9, Second: 21}, {First: 10, Second: 29}, {First: 11, Second: 17}, {First: 12, Second: 18}, {First: 14, Second: 26}, {First: 22, Second: 27}}
 	matcher := NewRandomMathcerWithFixedVertexes(fixedVertexes)
 	if !matcher.IsPerfectMatchingExist(g) {
 		t.Error("Perfect matching does not exist")
+		return
 	}
 
 	matcher.SetFixedVertexes([]gopair.IntPair{{First: 0, Second: 6}, {First: 3, Second: 4}})
 	matching, err := matcher.GetPerfectMatching(g) //matcher.getPerfectMatchingByRandomAlgorithmWithFixedVertexes(g, fixedVertexes)
 	if err == NoPerfectMatching {
 		fmt.Println(err)
+	} else {
+		fmt.Println("Start result:")
+		for i := 0; i < len(matching); i++ {
+			fmt.Println("(", matching[i].First, ":", matching[i].Second, ")")
+		}
+		fmt.Println("TestGetPerfectMatchingByRandomAlgorithmWithFixedVertexes=[ok]")
 	}
-	for i := 0; i < len(matching); i++ {
-		fmt.Println("(", matching[i].First, ":", matching[i].Second, ")")
-	}
-	fmt.Println("TestGetPerfectMatchingByRandomAlgorithmWithFixedVertexes=[ok]")
+
 }
 
 func TestInterfaceImplemenation(t *testing.T) {

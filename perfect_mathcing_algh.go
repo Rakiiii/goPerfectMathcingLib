@@ -21,13 +21,13 @@ func frinksPerfectMathcingAlgth(graph graphlib.IGraph) ([]gopair.IntPair, error)
 }
 
 type RandomMatcher struct {
-	rnd     *rand.Rand
+	Rnd     *rand.Rand
 	matcher IElementMatcher
 }
 
 type RandomMathcerWithFixedVertexes struct {
 	RandomMatcher
-	fixedVertexes []gopair.IntPair
+	FixedVertexes []gopair.IntPair
 	matcher       IElementMatcher
 }
 
