@@ -36,18 +36,18 @@ func NewRandomMathcerWithNilFixedVertexes() *RandomMathcerWithFixedVertexes {
 }
 
 func NewRandomMathcerWithFixedVertexes(fixedVertexes []gopair.IntPair) *RandomMathcerWithFixedVertexes {
-	return &RandomMathcerWithFixedVertexes{RandomMatcher: *NewRandomMatcher(), fixedVertexes: fixedVertexes}
+	return &RandomMathcerWithFixedVertexes{RandomMatcher: *NewRandomMatcher(), FixedVertexes: fixedVertexes}
 }
 
 func (c *RandomMathcerWithFixedVertexes) SetFixedVertexes(fixedVertexes []gopair.IntPair) {
-	c.fixedVertexes = fixedVertexes
+	c.FixedVertexes = fixedVertexes
 }
 
 func (c *RandomMathcerWithFixedVertexes) GetPerfectMatching(graph graphlib.IGraph) ([]gopair.IntPair, error) {
-	if c.fixedVertexes == nil {
+	if c.FixedVertexes == nil {
 		return nil, FixedVertexesNotInited
 	} else {
-		return c.getPerfectMatchingByRandomAlgorithmWithFixedVertexes(graph, c.fixedVertexes)
+		return c.getPerfectMatchingByRandomAlgorithmWithFixedVertexes(graph, c.FixedVertexes)
 	}
 
 }
@@ -68,7 +68,7 @@ func (c *RandomMathcerWithFixedVertexes) IsPerfectMatchingExist(graph graphlib.I
 	matrix.init(n)
 	perfectMatching := make([]gopair.IntPair, 0)
 	// fmt.Println("fixed vertexes:", c.fixedVertexes)
-	for _, vertexPair := range c.fixedVertexes {
+	for _, vertexPair := range c.FixedVertexes {
 		// printMatrix(B)
 		// printMatrix(Binversed)
 		// fmt.Println("perfect matching:", perfectMatching)
@@ -92,7 +92,7 @@ func (c *RandomMathcerWithFixedVertexes) IsPerfectMatchingExist(graph graphlib.I
 }
 
 func NewRandomMatcher() *RandomMatcher {
-	return &RandomMatcher{rnd: rand.New(rand.NewSource(time.Now().UnixNano()))}
+	return &RandomMatcher{Rnd: rand.New(rand.NewSource(time.Now().UnixNano()))}
 }
 
 func (c *RandomMatcher) GetPerfectMatching(graph graphlib.IGraph) ([]gopair.IntPair, error) {
@@ -208,7 +208,7 @@ func (c *RandomMatcher) constractRandomMatrix(graph graphlib.IGraph) *gonum.Dens
 	for i := 0; i < vertexAmount; i++ {
 		edges := graph.GetEdges(i)
 		for _, e := range edges {
-			value := float64(c.rnd.Int31n(1000))
+			value := float64(c.Rnd.Int31n(1000))
 			if rawMatrix[i*vertexAmount+e] == 0 {
 				rawMatrix[i*vertexAmount+e] = value
 			}

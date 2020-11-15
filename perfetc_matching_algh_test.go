@@ -27,7 +27,7 @@ func TestGetPerfectMatchingByRandomAlgorithm(t *testing.T) {
 		return
 	}
 	g.Print()
-	matcher := RandomMatcher{rnd: rand.New(rand.NewSource(testSeed))}
+	matcher := RandomMatcher{Rnd: rand.New(rand.NewSource(testSeed))}
 	if !matcher.IsPerfectMatchingExist(g) {
 		t.Error("Perfect matching does not exist")
 	}
