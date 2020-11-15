@@ -57,7 +57,7 @@ func TestGetPerfectMatchingByRandomAlgorithmWithFixedVertexes(t *testing.T) {
 	g.HungryNumIndependent()
 	g.Print()
 
-	//matcher := RandomMatcher{rnd: rand.New(rand.NewSource(testSeed))}
+	//matcher := RandomMatcher{rnd: rand.New(rand.NewSource(testSeed))  }
 	//fixedVertexes := []gopair.IntPair{gopair.IntPair{First: 2, Second: 13}, gopair.IntPair{First: 11, Second: 24}}
 
 	//  fixedVertexes := []gopair.IntPair{gopair.IntPair{First: 2, Second: 13}, gopair.IntPair{First: 6, Second: 29}}
