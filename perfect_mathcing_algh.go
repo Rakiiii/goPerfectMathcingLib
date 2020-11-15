@@ -13,6 +13,9 @@ import (
 
 var NoPerfectMatching error = errors.New("Perfect mathcing does not exist in graph")
 var FixedVertexesNotInited error = errors.New("Fixed vertexes at RandomMathcerWithFixedVertexes not initialized")
+var notCheckedVertex int = 0
+var connectedVertex int = 1
+var checkedVertex int = 2
 
 func frinksPerfectMathcingAlgth(graph graphlib.IGraph) ([]gopair.IntPair, error) {
 	perfectMatching := make([]gopair.IntPair, 0)
@@ -53,6 +56,29 @@ func (c *RandomMathcerWithFixedVertexes) GetPerfectMatching(graph graphlib.IGrap
 }
 
 func (c *RandomMathcerWithFixedVertexes) IsPerfectMatchingExist(graph graphlib.IGraph) bool {
+	if c.FixedVertexes == nil {
+		return false
+	} else {
+		return c.isPerfectMatchingExistWithFixedVertexes(graph, c.FixedVertexes)
+	}
+}
+
+func NewRandomMatcher() *RandomMatcher {
+	time := time.Now().UnixNano()
+	fmt.Println("time:", time)
+	return &RandomMatcher{Rnd: rand.New(rand.NewSource(time))}
+}
+
+func (c *RandomMatcher) GetPerfectMatching(graph graphlib.IGraph) ([]gopair.IntPair, error) {
+	return c.getPerfectMatchingByRandomAlgorithm(graph)
+}
+
+func (c *RandomMatcher) IsPerfectMatchingExist(graph graphlib.IGraph) bool {
+	matrix := c.constractRandomMatrix(graph)
+	return c.isPerfectMatchingExist(matrix)
+}
+
+func (c *RandomMatcher) isPerfectMatchingExistWithFixedVertexes(graph graphlib.IGraph, fixedVertexes []gopair.IntPair) bool {
 	n := graph.AmountOfVertex()
 	if n%2 != 0 {
 		return false
@@ -68,7 +94,7 @@ func (c *RandomMathcerWithFixedVertexes) IsPerfectMatchingExist(graph graphlib.I
 	matrix.init(n)
 	perfectMatching := make([]gopair.IntPair, 0)
 	// fmt.Println("fixed vertexes:", c.fixedVertexes)
-	for _, vertexPair := range c.FixedVertexes {
+	for _, vertexPair := range fixedVertexes {
 		// printMatrix(B)
 		// printMatrix(Binversed)
 		// fmt.Println("perfect matching:", perfectMatching)
@@ -88,23 +114,11 @@ func (c *RandomMathcerWithFixedVertexes) IsPerfectMatchingExist(graph graphlib.I
 	// printMatrix(B)
 	// printMatrix(Binversed)
 	// fmt.Println("perfect matching:", perfectMatching)
-	return c.RandomMatcher.isPerfectMatchingExist(B)
-}
-
-func NewRandomMatcher() *RandomMatcher {
-	return &RandomMatcher{Rnd: rand.New(rand.NewSource(time.Now().UnixNano()))}
-}
-
-func (c *RandomMatcher) GetPerfectMatching(graph graphlib.IGraph) ([]gopair.IntPair, error) {
-	return c.getPerfectMatchingByRandomAlgorithm(graph)
-}
-
-func (c *RandomMatcher) IsPerfectMatchingExist(graph graphlib.IGraph) bool {
-	matrix := c.constractRandomMatrix(graph)
-	return c.isPerfectMatchingExist(matrix)
+	return c.isPerfectMatchingExist(B)
 }
 
 func (c *RandomMatcher) isPerfectMatchingExist(matrix *gonum.Dense) bool {
+	//fmt.Println("matrix det:", gonum.Det(matrix))
 	return gonum.Det(matrix) != 0.0
 }
 
@@ -177,13 +191,14 @@ func (c *RandomMatcher) getPerfectMatchingByRandomAlgorithmWithFixedVertexes(gra
 
 	for k := 0; k < (n/2)-len(fixedVertexes); k++ {
 		// fmt.Println("k:", k, " max k:", (n/2)-len(fixedVertexes))
-		if !c.isPerfectMatchingExist(B) {
+		if !c.isPerfectMatchingExist(B) || !isGraphSingleConnected(B) || !isMatrixContainsNonZeroElements(Binversed) {
 			return nil, NoPerfectMatching
 		}
 		// matrix.print()
 		// fmt.Println()
 		// printMatrix(Binversed)
 		// fmt.Println()
+		// printMatrix(B)
 		i, j := c.getFirstNonZeroElemntPosition(Binversed, graph, &matrix)
 		x := matrix.getOriginalNumber(i, j)
 		// fmt.Println("(i:", i, ";j:", j, ") x(", x.First, ":", x.Second, ")")
@@ -213,7 +228,7 @@ func (c *RandomMatcher) constractRandomMatrix(graph graphlib.IGraph) *gonum.Dens
 				rawMatrix[i*vertexAmount+e] = value
 			}
 			if rawMatrix[e*vertexAmount+i] == 0 {
-				rawMatrix[e*vertexAmount+i] = value
+				rawMatrix[e*vertexAmount+i] = -value
 			}
 		}
 	}
@@ -273,7 +288,7 @@ func (c *RandomMatcher) constructTatasMatrix(d *gonum.Dense, graph graphlib.IGra
 	for i := 0; i < d.RawMatrix().Rows; i++ {
 		for j := 0; j < d.RawMatrix().Cols; j++ {
 			// && contains(graph.GetEdges(i), j)
-			if i != j {
+			if i != j && d.At(i, j) != 0 {
 				resultMatrix = append(resultMatrix, c.constructSecondLevelDet(d, i, j))
 			} else {
 				resultMatrix = append(resultMatrix, 0)
@@ -303,6 +318,22 @@ func (c *RandomMatcher) constructSecondLevelElement(matrix *gonum.Dense, rowPos 
 	return 0
 }
 
+func isGraphSingleConnected(matrix *gonum.Dense) bool {
+	vertexMarkers := make([]int, matrix.RawMatrix().Cols)
+	vertexMarkers[0] = connectedVertex
+	for contains(vertexMarkers, connectedVertex) {
+		vertex := find(vertexMarkers, connectedVertex)
+		//fmt.Println("markers:", vertexMarkers, " vertex:", vertex)
+		for i := 0; i < matrix.RawMatrix().Rows; i++ {
+			if matrix.At(vertex, i) != 0 && vertexMarkers[i] == notCheckedVertex {
+				vertexMarkers[i] = connectedVertex
+			}
+		}
+		vertexMarkers[vertex] = checkedVertex
+	}
+	return !contains(vertexMarkers, notCheckedVertex)
+}
+
 func printMatrix(matrix *gonum.Dense) {
 	for i := 0; i < matrix.RawMatrix().Rows; i++ {
 		fmt.Print("New Line :")
@@ -326,6 +357,17 @@ func printMatrixNonZero(matrix *gonum.Dense) {
 	fmt.Println()
 }
 
+func isMatrixContainsNonZeroElements(matrix *gonum.Dense) bool {
+	for i := 0; i < matrix.RawMatrix().Rows; i++ {
+		for j := 0; j < matrix.RawMatrix().Cols; j++ {
+			if matrix.At(i, j) != 0 {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func contains(s []int, e int) bool {
 	for _, a := range s {
 		if a == e {
@@ -333,6 +375,15 @@ func contains(s []int, e int) bool {
 		}
 	}
 	return false
+}
+
+func find(s []int, e int) int {
+	for pos, a := range s {
+		if a == e {
+			return pos
+		}
+	}
+	return -1
 }
 
 func containsInPair(s []gopair.IntPair, e int) bool {
