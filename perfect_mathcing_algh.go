@@ -34,15 +34,20 @@ func NewDetChecker() *DetChecker {
 }
 
 type CondChecker struct {
-	cond float64
+	cond   float64
+	border float64
 }
 
 func NewCondChecker(cond float64) *CondChecker {
-	return &CondChecker{cond: cond}
+	return &CondChecker{cond: cond, border: 100}
+}
+
+func NewCondCheckerWithCustomBorder(cond float64, border float64) *CondChecker {
+	return &CondChecker{cond: cond, border: border}
 }
 
 func (d *CondChecker) isDetZero(matrix gonum.Matrix) bool {
-	return gonum.Cond(matrix, d.cond) < 100
+	return gonum.Cond(matrix, d.cond) < d.border
 }
 
 type RandomMatcher struct {
