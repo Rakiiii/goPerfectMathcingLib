@@ -3,6 +3,7 @@ package permatchalgh
 import (
 	graphlib "github.com/Rakiiii/goGraph"
 	gopair "github.com/Rakiiii/goPair"
+	gonum "gonum.org/v1/gonum/mat"
 )
 
 type IPerfectMatcher interface {
@@ -15,4 +16,8 @@ type IPerfectMatcherChecker interface {
 
 type IElementMatcher interface {
 	matchElements(float64, float64) float64
+}
+
+type IMatrixDeterminantChecker interface {
+	isDetZero(matrix gonum.Matrix) bool
 }
